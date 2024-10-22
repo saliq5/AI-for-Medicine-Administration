@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "110710896341",
+    "project_id": "amarapp-5d3b2",
+    "storage_bucket": "amarapp-5d3b2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:110710896341:android:b61b49e09bd035ee50145c",
+        "android_client_info": {
+          "package_name": "com.example.amar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXgxkHJ61Cpy_gTC500ZtBGUT39DFlXH0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
