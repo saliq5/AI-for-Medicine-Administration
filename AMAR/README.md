@@ -1,4 +1,4 @@
-# amar_app
+# AMAR
 
 A new Flutter project.
 
