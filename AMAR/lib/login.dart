@@ -21,6 +21,29 @@ class LoginPage extends StatelessWidget {
             color: Colors.black,
           ),
         ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "AMAR",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(width: 10), // Space between text and logo
+            Image.asset(
+              'assets/images/amar_logo.png',
+              height: 30, // Adjust height as necessary
+            ),
+          ],
+        ),
+        centerTitle: true,
+        actions: [
+          // This helps to center the title by adding empty space on the right
+          SizedBox(width: 50),
+        ],
       ),
       body: Container(
         height: MediaQuery.of(context).size.height,
@@ -122,15 +145,15 @@ class LoginPage extends StatelessWidget {
                 ],
               ),
             ),
-            FadeInUp(
-                duration: Duration(milliseconds: 1200),
-                child: Container(
-                  height: MediaQuery.of(context).size.height / 3,
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage('assets/background.png'),
-                          fit: BoxFit.cover)),
-                ))
+            // FadeInUp(
+            //     duration: Duration(milliseconds: 1200),
+            //     child: Container(
+            //       height: MediaQuery.of(context).size.height / 3,
+            //       decoration: BoxDecoration(
+            //           image: DecorationImage(
+            //               image: AssetImage('assets/images/amar_logo.png'),
+            //               fit: BoxFit.cover)),
+            //     ))
           ],
         ),
       ),
