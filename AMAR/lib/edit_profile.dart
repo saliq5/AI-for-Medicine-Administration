@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfileApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: EditProfileScreen(),
-    );
+    return EditProfileScreen();
   }
 }
 
@@ -17,17 +17,58 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   // Profile fields
-  String firstName = '';
-  String lastName = '';
-  String age = '';
-  String address = '';
-  String mobileNumber = '';
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController mobileNumberController = TextEditingController();
+
   String gender = 'Male'; // Default gender selection
 
   // Meal times
   TimeOfDay breakfastTime = TimeOfDay.now();
   TimeOfDay lunchTime = TimeOfDay.now();
   TimeOfDay dinnerTime = TimeOfDay.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData(); // Fetch user data when the screen initializes
+  }
+
+  Future<void> _fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        setState(() {
+          firstNameController.text = doc['firstName'] ?? '';
+          lastNameController.text = doc['lastName'] ?? '';
+          ageController.text =
+              doc['age']?.toString() ?? ''; // Convert to string
+          addressController.text = doc['address'] ?? '';
+          mobileNumberController.text = doc['mobileNumber'] ?? '';
+          gender = doc['gender'] ?? 'Male'; // Default gender if null
+
+          // Convert stored time strings back to TimeOfDay
+          breakfastTime = _timeFromString(doc['breakfastTime']);
+          lunchTime = _timeFromString(doc['lunchTime']);
+          dinnerTime = _timeFromString(doc['dinnerTime']);
+        });
+      }
+    }
+  }
+
+  // Helper function to convert "HH:mm" string to TimeOfDay
+  TimeOfDay _timeFromString(String? time) {
+    if (time == null || time.isEmpty) return TimeOfDay.now();
+    final parts =
+        time.split(':'); // Assumes the time is stored in "HH:mm" format
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
 
   Future<void> _selectTime(BuildContext context, String meal) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -51,25 +92,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  void _submit() {
-    // Handle the submission of the profile data
-    print('Profile Saved:');
-    print('First Name: $firstName');
-    print('Last Name: $lastName');
-    print('Age: $age');
-    print('Address: $address');
-    print('Mobile Number: $mobileNumber');
-    print('Gender: $gender');
-    print('Breakfast: ${breakfastTime.format(context)}');
-    print('Lunch: ${lunchTime.format(context)}');
-    print('Dinner: ${dinnerTime.format(context)}');
-    // Implement saving logic here
+  void _submit() async {
+    if (firstNameController.text.isEmpty ||
+        lastNameController.text.isEmpty ||
+        ageController.text.isEmpty ||
+        addressController.text.isEmpty ||
+        mobileNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields!')),
+      );
+      return; // Exit early if validation fails
+    }
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentReference userDoc =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      // Profile data to save
+      Map<String, dynamic> profileData = {
+        'firstName': firstNameController.text,
+        'lastName': lastNameController.text,
+        'age': ageController.text.isNotEmpty
+            ? int.parse(ageController.text)
+            : null, // Save age as int if not empty
+        'address': addressController.text,
+        'mobileNumber': mobileNumberController.text,
+        'gender': gender,
+        'breakfastTime':
+            '${breakfastTime.hour}:${breakfastTime.minute.toString().padLeft(2, '0')}', // Save as "HH:mm"
+        'lunchTime':
+            '${lunchTime.hour}:${lunchTime.minute.toString().padLeft(2, '0')}',
+        'dinnerTime':
+            '${dinnerTime.hour}:${dinnerTime.minute.toString().padLeft(2, '0')}',
+      };
+
+      try {
+        // Check if user document exists
+        DocumentSnapshot doc = await userDoc.get();
+        if (doc.exists) {
+          await userDoc.update(profileData);
+        } else {
+          await userDoc.set(profileData);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profile saved successfully!')),
+        );
+        Navigator.pop(
+            context, true); // Notify that the profile has been updated
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving profile: $e')),
+        );
+      }
+    }
   }
 
-  Widget makeInput(
-      {required String label,
-      TextInputType keyboardType = TextInputType.text,
-      Function(String)? onChanged}) {
+  Widget makeInput({
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    TextEditingController? controller,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -81,7 +165,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         SizedBox(height: 5),
         TextField(
           keyboardType: keyboardType,
-          onChanged: onChanged,
+          controller: controller,
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
             enabledBorder: OutlineInputBorder(
@@ -90,7 +174,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 borderSide: BorderSide(color: Colors.grey.shade400)),
           ),
         ),
-        SizedBox(height: 30),
+        SizedBox(height: 20),
       ],
     );
   }
@@ -129,12 +213,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 );
               }).toList(),
               isExpanded: true,
-              // Set the background color to match the input fields
               dropdownColor: Colors.white,
             ),
           ),
         ),
-        SizedBox(height: 30),
+        SizedBox(height: 20),
       ],
     );
   }
@@ -151,8 +234,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            size: 20,
+            color: Colors.black,
+          ),
         ),
+        title: Text(
+          "AMAR",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: Image.asset(
+              'assets/images/amar_logo.png',
+              height: 30,
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -160,7 +265,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             children: <Widget>[
               FadeInUp(
-                duration: Duration(milliseconds: 1000),
+                duration: Duration(milliseconds: 300),
                 child: Text(
                   "Edit Profile",
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
@@ -168,7 +273,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               SizedBox(height: 20),
               FadeInUp(
-                duration: Duration(milliseconds: 1200),
+                duration: Duration(milliseconds: 400),
                 child: Text(
                   "Update your information",
                   style: TextStyle(fontSize: 15, color: Colors.grey[700]),
@@ -176,49 +281,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               SizedBox(height: 20),
               FadeInUp(
-                duration: Duration(milliseconds: 1300),
+                duration: Duration(milliseconds: 500),
                 child: makeInput(
                   label: "First Name",
-                  onChanged: (value) => firstName = value,
+                  controller: firstNameController,
                 ),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 1400),
+                duration: Duration(milliseconds: 600),
                 child: makeInput(
                   label: "Last Name",
-                  onChanged: (value) => lastName = value,
+                  controller: lastNameController,
                 ),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 1500),
+                duration: Duration(milliseconds: 700),
                 child: makeInput(
                   label: "Age",
                   keyboardType: TextInputType.number,
-                  onChanged: (value) => age = value,
+                  controller: ageController,
                 ),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 1600),
-                child: makeGenderDropdown(), // Gender Dropdown right after Age
+                duration: Duration(milliseconds: 800),
+                child: makeGenderDropdown(),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 1700),
+                duration: Duration(milliseconds: 900),
                 child: makeInput(
                   label: "Address",
-                  onChanged: (value) => address = value,
+                  controller: addressController,
                 ),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 1800),
+                duration: Duration(milliseconds: 1000),
                 child: makeInput(
                   label: "Mobile Number",
                   keyboardType: TextInputType.phone,
-                  onChanged: (value) => mobileNumber = value,
+                  controller: mobileNumberController,
                 ),
               ),
               SizedBox(height: 20),
               FadeInUp(
-                duration: Duration(milliseconds: 1900),
+                duration: Duration(milliseconds: 1100),
                 child: ListTile(
                   title:
                       Text('Breakfast Time: ${breakfastTime.format(context)}'),
@@ -227,7 +332,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 2000),
+                duration: Duration(milliseconds: 1200),
                 child: ListTile(
                   title: Text('Lunch Time: ${lunchTime.format(context)}'),
                   trailing: Icon(Icons.access_time),
@@ -235,7 +340,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               FadeInUp(
-                duration: Duration(milliseconds: 2100),
+                duration: Duration(milliseconds: 1300),
                 child: ListTile(
                   title: Text('Dinner Time: ${dinnerTime.format(context)}'),
                   trailing: Icon(Icons.access_time),
@@ -244,13 +349,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               SizedBox(height: 20),
               FadeInUp(
-                duration: Duration(milliseconds: 2200),
+                duration: Duration(milliseconds: 1400),
                 child: Container(
                   width: double.infinity,
                   child: MaterialButton(
                     onPressed: _submit,
                     height: 60,
-                    color: Colors.greenAccent, // Button color
+                    color: Colors.greenAccent,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
@@ -260,8 +365,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
-                        color: Colors
-                            .white, // Optional: to ensure the text stands out
+                        color: Colors.white,
                       ),
                     ),
                   ),
