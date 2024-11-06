@@ -1,47 +1,35 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'otp_page.dart'; // Import the OTP Page
-import 'login.dart'; // Import the Login Page
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'otp_page.dart';
+import 'login.dart';
 
 class SignupPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   Future<void> sendVerificationEmail(String email, BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     try {
-      // Check if the email already exists
       final signInMethods = await auth.fetchSignInMethodsForEmail(email);
       if (signInMethods.isNotEmpty) {
-        // Email already in use
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Email already exists! Please use another email.')),
+          SnackBar(content: Text('Email already exists! Please use another email.')),
         );
         return;
       }
 
-      // Create a new user
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: passwordController.text,
       );
 
-      // Send verification email
       await userCredential.user?.sendEmailVerification();
 
-      // Optionally, save user info to Firestore
-      // await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
-      //   'email': email,
-      //   'createdAt': Timestamp.now(),
-      // });
-
-      // Navigate to OTP page
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => OtpPage()),
@@ -56,181 +44,170 @@ class SignupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(
-            Icons.arrow_back_ios,
-            size: 20,
-            color: Colors.black,
-          ),
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: Theme.of(context).colorScheme.primary),
         ),
         title: Text(
           "AMAR",
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
+            color: Theme.of(context).colorScheme.primary,
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
         actions: [
           Padding(
-            padding:
-                EdgeInsets.only(right: 16.0), // Add some padding to the right
+            padding: EdgeInsets.only(right: 16.w),
             child: Image.asset(
               'assets/images/amar_logo.png',
-              height: 30, // Adjust height as necessary
+              height: 30.h,
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 40),
-          height: MediaQuery.of(context).size.height - 50,
-          width: double.infinity,
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    FadeInUp(
-                      duration: Duration(milliseconds: 300),
-                      child: Text(
-                        "Sign up",
-                        style: TextStyle(
-                            fontSize: 30, fontWeight: FontWeight.bold),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Theme.of(context).colorScheme.background, Theme.of(context).colorScheme.surface],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 50.h),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  FadeInUp(
+                    duration: Duration(milliseconds: 300),
+                    child: Text(
+                      "Sign up",
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    SizedBox(height: 20),
-                    FadeInUp(
-                      duration: Duration(milliseconds: 400),
-                      child: Text(
-                        "Create an account, It's free",
-                        style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                      ),
+                  ),
+                  SizedBox(height: 20.h),
+                  FadeInUp(
+                    duration: Duration(milliseconds: 400),
+                    child: Text(
+                      "Create an account, It's free",
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
-                  ],
-                ),
-                Column(
-                  children: <Widget>[
-                    FadeInUp(
-                      duration: Duration(milliseconds: 500),
-                      child: makeInput(
-                        label: "Email",
-                        controller: emailController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please enter your email";
-                          } else if (!RegExp(
-                                  r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-                              .hasMatch(value)) {
-                            return "Please enter a valid email address";
-                          }
-                          return null;
-                        },
-                        keyboardType: TextInputType.emailAddress,
-                      ),
+                  ),
+                  SizedBox(height: 40.h),
+                  FadeInUp(
+                    duration: Duration(milliseconds: 500),
+                    child: makeInput(
+                      label: "Email",
+                      controller: emailController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter your email";
+                        } else if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                          return "Please enter a valid email address";
+                        }
+                        return null;
+                      },
+                      keyboardType: TextInputType.emailAddress,
                     ),
-                    FadeInUp(
-                      duration: Duration(milliseconds: 600),
-                      child: makeInput(
-                        label: "Password",
-                        controller: passwordController,
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please enter a password";
-                          } else if (value.length < 6) {
-                            return "Password must be at least 6 characters long";
-                          }
-                          return null;
-                        },
-                      ),
+                  ),
+                  FadeInUp(
+                    duration: Duration(milliseconds: 600),
+                    child: makeInput(
+                      label: "Password",
+                      controller: passwordController,
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter a password";
+                        } else if (value.length < 6) {
+                          return "Password must be at least 6 characters long";
+                        }
+                        return null;
+                      },
                     ),
-                    FadeInUp(
-                      duration: Duration(milliseconds: 700),
-                      child: makeInput(
-                        label: "Confirm Password",
-                        controller: confirmPasswordController,
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please confirm your password";
-                          } else if (value != passwordController.text) {
-                            return "Passwords do not match";
-                          }
-                          return null;
-                        },
-                      ),
+                  ),
+                  FadeInUp(
+                    duration: Duration(milliseconds: 700),
+                    child: makeInput(
+                      label: "Confirm Password",
+                      controller: confirmPasswordController,
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please confirm your password";
+                        } else if (value != passwordController.text) {
+                          return "Passwords do not match";
+                        }
+                        return null;
+                      },
                     ),
-                  ],
-                ),
-                FadeInUp(
-                  duration: Duration(milliseconds: 800),
-                  child: Container(
-                    padding: EdgeInsets.only(top: 3, left: 3),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border(
-                        bottom: BorderSide(color: Colors.black),
-                        top: BorderSide(color: Colors.black),
-                        left: BorderSide(color: Colors.black),
-                        right: BorderSide(color: Colors.black),
-                      ),
-                    ),
-                    child: MaterialButton(
-                      minWidth: double.infinity,
-                      height: 60,
+                  ),
+                  SizedBox(height: 40.h),
+                  FadeInUp(
+                    duration: Duration(milliseconds: 800),
+                    child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           sendVerificationEmail(emailController.text, context);
                         }
                       },
-                      color: Colors.greenAccent,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 50.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
                       child: Text(
                         "Sign up",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 18),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                FadeInUp(
-                  duration: Duration(milliseconds: 900),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text("Already have an account?"),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => LoginPage()));
-                        },
-                        child: Text(
-                          "  Login",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 16),
+                  SizedBox(height: 20.h),
+                  FadeInUp(
+                    duration: Duration(milliseconds: 900),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "Already have an account?",
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                      ),
-                    ],
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => LoginPage()),
+                            );
+                          },
+                          child: Text(
+                            "  Login",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16.sp,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -251,23 +228,35 @@ class SignupPage extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey[300],
+          ),
         ),
-        SizedBox(height: 5),
+        SizedBox(height: 5.h),
         TextFormField(
           controller: controller,
           obscureText: obscureText,
           validator: validator,
           keyboardType: keyboardType,
+          style: TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10.w),
             enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade400)),
-            border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade400)),
+              borderSide: BorderSide(color: Colors.grey.shade600),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey.shade400),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.red.shade400),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.red.shade400),
+            ),
           ),
         ),
-        SizedBox(height: 30),
+        SizedBox(height: 20.h),
       ],
     );
   }
