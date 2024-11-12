@@ -18,6 +18,30 @@ void main() async {
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.dark(
+              primary: Color(0xFF2AC9CD),
+              surface: Color(0xFF1E1E1E),
+              background: Color(0xFF1E1E1E),
+            ),
+            textTheme: TextTheme(
+              displayLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              bodyLarge: TextStyle(color: Colors.grey[300]),
+              labelLarge: TextStyle(color: Colors.white),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Color(0xFF2AC9CD),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Color(0xFF2AC9CD),
+                side: BorderSide(color: Color(0xFF2AC9CD)),
+              ),
+            ),
+          ),
           home: AuthWrapper(),
         );
       },
@@ -47,111 +71,115 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.symmetric(
-              horizontal: 30.w, vertical: 50.h), // Use ScreenUtil here
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  FadeInUp(
-                      duration: Duration(milliseconds: 1000),
-                      child: Text(
-                        "AMAR",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 30.sp), // Use ScreenUtil here
-                      )),
-                  SizedBox(
-                    height: 20.h, // Use ScreenUtil here
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1E1E1E), Color(0xFF2C2C2C)],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 50.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                FadeInDown(
+                  duration: Duration(milliseconds: 1000),
+                  child: Text(
+                    "Welcome to",
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.grey[400],
+                    ),
                   ),
-                  FadeInUp(
-                      duration: Duration(milliseconds: 1200),
-                      child: Text(
-                        "Harness the power of AI for effective medicine administration",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 15.sp), // Use ScreenUtil here
-                      )),
-                ],
-              ),
-              FadeInUp(
+                ),
+                FadeInDown(
+                  duration: Duration(milliseconds: 1200),
+                  child: Text(
+                    "AMAR",
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 40.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                FadeInDown(
                   duration: Duration(milliseconds: 1400),
-                  child: Container(
-                    height: MediaQuery.of(context).size.height / 3,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/images/amar_logo.png'))),
-                  )),
-              Column(
-                children: <Widget>[
-                  FadeInUp(
-                      duration: Duration(milliseconds: 1500),
-                      child: MaterialButton(
-                        minWidth: double.infinity,
-                        height: 60.h, // Use ScreenUtil here
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => LoginPage()));
-                        },
-                        shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Colors.black),
-                            borderRadius: BorderRadius.circular(50)),
-                        child: Text(
-                          "Login",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18.sp), // Use ScreenUtil here
-                        ),
-                      )),
-                  SizedBox(
-                    height: 20.h, // Use ScreenUtil here
+                  child: Text(
+                    "AI-powered Medicine Administration Reminder",
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontSize: 16.sp,
+                    ),
                   ),
-                  FadeInUp(
-                      duration: Duration(milliseconds: 1600),
-                      child: Container(
-                        padding: EdgeInsets.only(
-                            top: 3.h, left: 3.w), // Use ScreenUtil here
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            border: Border(
-                              bottom: BorderSide(color: Colors.black),
-                              top: BorderSide(color: Colors.black),
-                              left: BorderSide(color: Colors.black),
-                              right: BorderSide(color: Colors.black),
-                            )),
-                        child: MaterialButton(
-                          minWidth: double.infinity,
-                          height: 60.h, // Use ScreenUtil here
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SignupPage()));
-                          },
-                          color: Colors.yellow,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50)),
-                          child: Text(
-                            "Sign up",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18.sp), // Use ScreenUtil here
-                          ),
+                ),
+                Expanded(
+                  child: FadeInUp(
+                    duration: Duration(milliseconds: 1600),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/amar_logo.png'),
+                          fit: BoxFit.contain,
                         ),
-                      ))
-                ],
-              )
-            ],
+                      ),
+                    ),
+                  ),
+                ),
+                FadeInUp(
+                  duration: Duration(milliseconds: 1800),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 15.h),
+                      minimumSize: Size(double.infinity, 50.h),
+                    ),
+                    child: Text(
+                      "Login",
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                FadeInUp(
+                  duration: Duration(milliseconds: 2000),
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignupPage()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 15.h),
+                      minimumSize: Size(double.infinity, 50.h),
+                    ),
+                    child: Text(
+                      "Sign up",
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
